@@ -4,5 +4,7 @@ app_name='system'
 
 
 urlpatterns = [
-    path('',views.systemOperations,name="operations")
+    path('',views.systemOperations,name="operations"),
+    path('register_complain/',views.registerComplain,name='register_complain'),
+    
 ]

@@ -1,5 +1,11 @@
 from django.shortcuts import render,redirect
 from .system_functions import SystemOperations
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 # Create your views here.
 
 def systemOperations(request):
@@ -27,3 +33,10 @@ def systemOperations(request):
 
 
     return render(request,"index.html")
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def registerComplain(request):
+    data=request.data
+    print(data.get('username'))
+    return Response({'msg': "Complain Registered!"},status=status.HTTP_200_OK)
