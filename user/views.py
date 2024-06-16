@@ -69,4 +69,4 @@ class UserLogin(APIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_auth_status(request):
-    return Response({'msg': 'Authenticated'},status=status.HTTP_201_CREATED)
+    return Response({'msg': 'Authenticated'},status=status.HTTP_200_OK)
