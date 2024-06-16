@@ -70,3 +70,25 @@ class UserLogin(APIView):
 @permission_classes([IsAuthenticated])
 def check_auth_status(request):
     return Response({'msg': 'Authenticated'},status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_info(request):
+    username = request.user.username
+    # get user info from database
+    user_info = UserInformations.objects.get(user_id=username)
+    
+    return Response({
+        'msg':'Got user information',
+        'user_info':{
+            'user_id':user_info.user_id,
+            'organization':user_info.organization_id.name,
+            'full_name':user_info.full_name,
+            'user_picture':'/media_files/'+str(user_info.user_picture),
+            'birth_date':user_info.birth_date,
+            'contact_no':user_info.contact_no,
+            'email_address':user_info.email_address,
+            'home_address':user_info.home_address,
+            'gender':user_info.gender,
+        }
+    },status=status.HTTP_200_OK)
