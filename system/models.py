@@ -11,7 +11,7 @@ class Complain_types(models.Model):
         verbose_name="Complain Type"
 
     def __str__(self) -> str:
-        return str(self.pk)
+        return str(self.complain_type)
 
 class UserComplains(models.Model):
     '''
@@ -26,7 +26,6 @@ class UserComplains(models.Model):
     # information of the bully
     bully_name=models.CharField(null=False,blank=False,max_length=50,default="Unknown")
     bully_id=models.CharField(null=True,blank=True,max_length=30)
-    bully_picture=models.ImageField(null=True,blank=True,upload_to='bully_pictures/')    
     
     #information of the complaing
     incident_date=models.DateField(null=True,blank=True)
@@ -43,10 +42,26 @@ class UserComplains(models.Model):
     def __str__(self) -> str:
         return str(self.pk)
 
+
+def bully_image_upload_to(instance, filename):
+    return f'bully_image/{instance.complain_id}/bully_{filename}'
+class BullyPictures(models.Model):
+    '''Stores the pictures of the bully in the system'''
+    complain_id=models.ForeignKey(UserComplains,null=False,blank=False,on_delete=models.CASCADE)
+    bully_image=models.ImageField(null=True,blank=True,upload_to=bully_image_upload_to)
+    
+    class Meta:
+        verbose_name="Bully Images"
+    def __str__(self) -> str:
+        return str(self.complain_id)
+
+def prove_image_upload_to(instance, filename):
+    return f'complain_proofs/{instance.complain_id}/prove_{filename}'
+
 class UserComplainProof(models.Model):
     '''Stores the uploaded complain proves'''
     complain_id=models.ForeignKey(UserComplains,null=False,blank=False,on_delete=models.CASCADE)
-    proof=models.ImageField(null=True,blank=True,upload_to=f'complain_proofs/{complain_id}/')
+    proof=models.ImageField(null=True,blank=True,upload_to=prove_image_upload_to)
     proof_image_to_text=models.CharField(null=True,blank=True,max_length=400)
 
     class Meta:
