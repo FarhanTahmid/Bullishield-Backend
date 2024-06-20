@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view, permission_classes
 from user.models import UserInformations
 from .models import *
 from .complain_handler import ComplainHandler
+from .serializer import *
 
 # Create your views here.
 
@@ -38,6 +39,25 @@ def systemOperations(request):
 
 
     return render(request,"index.html")
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def getUserComplains(request):
+    if not request.user.is_authenticated:
+        return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        data=request.data
+        # get the complainer
+        user_id=data.get('user_id')
+        # get user object
+        try:
+            user=UserInformations.objects.get(user_id=user_id)
+        except UserInformations.DoesNotExist:
+            return Response({'msg':"Session timed out. Please login again!"},status=status.HTTP_400_BAD_REQUEST)
+        
+        complaints = UserComplains.objects.filter(complainer=user)
+        serializer=UserComplainSerializer(complaints,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def getComplainTypes(request):
