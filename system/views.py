@@ -48,16 +48,15 @@ def getUserComplains(request):
     else:
         data=request.data
         # get the complainer
-        user_id=data.get('user_id')
+        user_id=request.user.username
         # get user object
         try:
             user=UserInformations.objects.get(user_id=user_id)
         except UserInformations.DoesNotExist:
             return Response({'msg':"Session timed out. Please login again!"},status=status.HTTP_400_BAD_REQUEST)
         
-        complaints = UserComplains.objects.filter(complainer=user)
-        serializer=UserComplainSerializer(complaints,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        complaints = UserComplains.objects.filter(complainer=user).values()
+        return Response({'complain_list':complaints},status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def getComplainTypes(request):
