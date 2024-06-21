@@ -55,8 +55,40 @@ def getUserComplains(request):
         except UserInformations.DoesNotExist:
             return Response({'msg':"Session timed out. Please login again!"},status=status.HTTP_400_BAD_REQUEST)
         
-        complaints = UserComplains.objects.filter(complainer=user).values()
+        complaints = UserComplains.objects.filter(complainer=user).values().order_by('-id')
         return Response({'complain_list':complaints},status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def getComplainDetails(request):
+    if not request.user.is_authenticated:
+        return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        data=request.data
+        # get the complain id
+        complain_id=data.get('complain_id')
+        # get the complain object
+        try:
+            complain=UserComplains.objects.get(pk=complain_id)
+            proof_images=UserComplainProof.objects.filter(complain_id=complain)
+            bully_images=BullyPictures.objects.filter(complain_id=complain)
+            
+            proof_images_urls = [proof_image.proof.url for proof_image in proof_images]
+            bully_images_urls = [bully_image.bully_image.url for bully_image in bully_images]            
+            return Response({
+                'proof_images':proof_images_urls,
+                'bully_images':bully_images_urls,
+                'organization_name':complain.organization_id.name,
+                'complain_validation':complain.complain_validation,
+                'complain_description':complain.complain_description,
+                'is_bully_guilty':complain.guilty,
+                'proctor_decision':complain.proctor_decision,
+                'complain_type':complain.complain_type.complain_type,
+                'bully_id':complain.bully_id,
+                },status=status.HTTP_200_OK)
+        except UserComplains.DoesNotExist:
+            return Response({'msg':"Complain not found!"},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 def getComplainTypes(request):
