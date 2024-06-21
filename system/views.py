@@ -158,3 +158,31 @@ def registerComplain(request):
             return Response({'msg': "Complain Registered! We will get back to you soon!"},status=status.HTTP_200_OK)
         else:
             return Response({'msg': "Complain can not be registered!"},status=status.HTTP_403_FORBIDDEN)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def proctorComplainView(request):
+    if not request.user.is_authenticated:
+        return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        # get the userid
+        user_id=request.user.username
+        # get the user info and check if the user is a proctor or not
+        try:
+            user=UserInformations.objects.get(user_id=user_id)
+            if(user.is_proctor):
+                # get all the complains of that particular organization
+                organization_complains=UserComplains.objects.filter(organization_id=user.organization_id).values(
+                    'id','complainer','organization_id','complain_type',
+                    'bully_name','bully_id',
+                    'incident_date','complain_description','complain_validation',
+                    'complain_status','proctor_decision','guilty'
+                ).order_by('-pk')
+                
+                return Response({'complain_list':organization_complains,'organization_name':user.organization_id.name},status=status.HTTP_200_OK)
+            else:
+                print("User is not a proctor")
+                return Response({'msg':"You need proctor access to view this page!"},status=status.HTTP_401_UNAUTHORIZED)
+        except UserInformations.DoesNotExist:
+            return Response({'msg':"User not found!"},status=status.HTTP_404_NOT_FOUND)

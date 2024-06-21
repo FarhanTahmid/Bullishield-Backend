@@ -9,5 +9,6 @@ urlpatterns = [
     path('get_complain_type/',views.getComplainTypes,name='complain_type'),
     path('get_user_complains/',views.getUserComplains,name="get_user_complains"),
     path('get_complain_details/',views.getComplainDetails,name="get_complain_details"),
+    path('get_proctor_complains/',views.proctorComplainView,name="get_proctor_complains"),
     
 ]

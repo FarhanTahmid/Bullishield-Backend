@@ -4,4 +4,8 @@ from .models import *
 class UserComplainSerializer(serializers.ModelSerializer):
     class Meta:
         model=UserComplains
-        fields = ['bully_name', 'complain_description', 'incident_date', 'complain_status']
+        fields = ['complainer','organization_id','complain_type',
+            'bully_name','bully_id',
+            'incident_date','complain_description','complain_validation',
+            'complain_status','proctor_decision','guilty'
+        ]
