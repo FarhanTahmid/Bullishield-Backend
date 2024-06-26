@@ -86,7 +86,29 @@ def getComplainDetails(request):
                 'proctor_decision':complain.proctor_decision,
                 'complain_type':complain.complain_type.complain_type,
                 'bully_id':complain.bully_id,
+                'complain_status':complain.complain_status
                 },status=status.HTTP_200_OK)
+        except UserComplains.DoesNotExist:
+            return Response({'msg':"Complain not found!"},status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def updateComplainDetails(request):
+    if not request.user.is_authenticated:
+        return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        data=request.data
+        # get the complain id
+        complain_id=data.get('complain_id')
+        try:
+            # get the complain object
+            complain = UserComplains.objects.get(pk=complain_id)
+            # update the complain attributes
+            complain.proctor_decision=data.get('proctor_decision')
+            complain.complain_status=data.get('complain_status')
+            complain.guilty=data.get('is_bully_guilty')
+            complain.save()
+            return Response({'msg':"Complain updated successfully!"},status=status.HTTP_200_OK)
         except UserComplains.DoesNotExist:
             return Response({'msg':"Complain not found!"},status=status.HTTP_404_NOT_FOUND)
 
@@ -179,7 +201,6 @@ def proctorComplainView(request):
                     'incident_date','complain_description','complain_validation',
                     'complain_status','proctor_decision','guilty'
                 ).order_by('-pk')
-                
                 return Response({'complain_list':organization_complains,'organization_name':user.organization_id.name},status=status.HTTP_200_OK)
             else:
                 print("User is not a proctor")
