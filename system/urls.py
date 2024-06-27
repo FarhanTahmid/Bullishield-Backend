@@ -1,5 +1,6 @@
 from django.urls import path
 from system import views
+from .views import *
 app_name='system'
 
 
@@ -11,5 +12,6 @@ urlpatterns = [
     path('get_complain_details/',views.getComplainDetails,name="get_complain_details"),
     path('get_proctor_complains/',views.proctorComplainView,name="get_proctor_complains"),
     path('update_complains/',views.updateComplainDetails,name="update_complain"),
+    path('meeting/',SchedueleMeeting.as_view(),name='meeting'),
     
 ]

@@ -207,3 +207,51 @@ def proctorComplainView(request):
                 return Response({'msg':"You need proctor access to view this page!"},status=status.HTTP_401_UNAUTHORIZED)
         except UserInformations.DoesNotExist:
             return Response({'msg':"User not found!"},status=status.HTTP_404_NOT_FOUND)
+        
+
+class SchedueleMeeting(APIView):
+    @api_view(['GET'])
+    @permission_classes([IsAuthenticated])
+    def get(self,request):
+        pass
+    def post(self,request):
+        if not request.user.is_authenticated:
+            return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            data=request.data
+            task=data.get('task')
+            if(task=='meeting_setup'):
+                complain_id=data.get('complain_id')
+                # get the complain object to get the information about complainer and bully
+                try:
+                    complain=UserComplains.objects.get(id=complain_id)
+                    complainer_contact_no=complain.complainer.contact_no
+                    complainer_email=complain.complainer.email_address
+                    # now we need to try and get the informations about bully
+                    bully_id=complain.bully_id
+                    # get information about bully from user database
+                    try:
+                        bully=UserInformations.objects.get(user_id=bully_id)
+                        bully_contact_no=bully.contact_no
+                        bully_email=bully.email_address
+                        
+                        return Response({
+                            'msg':"Got contact informations of both parties from user database",
+                            'complainer_contact_no':complainer_contact_no,
+                            'complainer_email':complainer_email,
+                            'bully_contact_no':bully_contact_no,
+                            'bully_email':bully_email
+                        },status=status.HTTP_200_OK)
+                    except UserInformations.DoesNotExist:
+                        return Response({
+                                'msg':"Could not get bully information from user database",
+                                'complainer_contact_no':complainer_contact_no,
+                                'complainer_email':complainer_email,
+                                'bully_contact_no':'',
+                                'bully_email':''
+                                },status=status.HTTP_200_OK)       
+                except UserComplains.DoesNotExist:
+                    return Response({'msg':"Complain not found!"},status=status.HTTP_404_NOT_FOUND)
+            else:
+                return Response(status=status.HTTP_403_FORBIDDEN)  
+            
