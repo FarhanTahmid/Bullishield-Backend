@@ -86,7 +86,8 @@ def getComplainDetails(request):
                 'proctor_decision':complain.proctor_decision,
                 'complain_type':complain.complain_type.complain_type,
                 'bully_id':complain.bully_id,
-                'complain_status':complain.complain_status
+                'complain_status':complain.complain_status,
+                'is_meeting_scheduled':complain.is_meeting_scheduled,
                 },status=status.HTTP_200_OK)
         except UserComplains.DoesNotExist:
             return Response({'msg':"Complain not found!"},status=status.HTTP_404_NOT_FOUND)
@@ -240,7 +241,8 @@ class ScheduleMeeting(APIView):
                             'complainer_contact_no':complainer_contact_no,
                             'complainer_email':complainer_email,
                             'bully_contact_no':bully_contact_no,
-                            'bully_email':bully_email
+                            'bully_email':bully_email,
+                            'is_meeting_scheduled':complain.is_meeting_scheduled,
                         },status=status.HTTP_200_OK)
                     except UserInformations.DoesNotExist:
                         return Response({
@@ -293,11 +295,17 @@ class ScheduleMeeting(APIView):
                             meeting_message=meeting_message,  
                         )
                         new_bully_meeting.save()
-                        return Response({'msg':"Meeting was scheduled for all the parties"},status=status.HTTP_200_OK)
                     except UserInformations.DoesNotExist:
-                        return Response({'msg':"Could not get bully information from user database. Meeting Scheduled for Complainer and Proctor. Bully will be notified by the given contact details!"},status=status.HTTP_404_NOT_FOUND)
+                        complain.is_meeting_scheduled=True
+                        complain.save()
+                        return Response({'msg':"Could not get bully information from user database. Meeting Scheduled for Complainer and Proctor. Bully will be notified by the given contact details!"},status=status.HTTP_200_OK)
                 except Exception as e:
                     print(e)
+                
+                complain.is_meeting_scheduled=True
+                complain.save()
+                return Response({'msg':"Meeting was scheduled for all the parties"},status=status.HTTP_200_OK)
+
                                     
             else:
                 return Response(status=status.HTTP_403_FORBIDDEN)

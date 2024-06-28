@@ -12,3 +12,7 @@ class UserComplains(admin.ModelAdmin):
         'complainer','organization_id','bully_name','incident_date',
         'complain_status','guilty'
     ]
+
+@admin.register(ScheduledMeetings)
+class ScheduledMeetings(admin.ModelAdmin):
+    list_display = ['pk', 'user_id' ,'complain_id', 'meeting_time', 'meeting_message']

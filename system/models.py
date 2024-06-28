@@ -35,7 +35,9 @@ class UserComplains(models.Model):
     proctor_decision=models.CharField(null=True,blank=True,max_length=1000)
     
     guilty=models.BooleanField(null=True,blank=True,default=False)
-
+    is_meeting_scheduled=models.BooleanField(null=False,blank=False,default=False)
+    
+    
     class Meta:
         verbose_name="User Complains"
 
