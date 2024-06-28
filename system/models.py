@@ -68,4 +68,27 @@ class UserComplainProof(models.Model):
         verbose_name = ("Complain Proves")
     def __str__(self):
         return str(self.complain_id)
-   
+
+
+class ScheduledMeetings(models.Model):
+    '''Stores the scheduled meetings between the bully and the complainer'''
+    complain_id=models.ForeignKey(UserComplains,null=False,blank=False,on_delete=models.CASCADE)
+    user_id=models.ForeignKey(UserInformations,null=False,blank=False,on_delete=models.CASCADE)
+    meeting_time=models.DateTimeField(null=False,blank=False)
+    meeting_message=models.CharField(max_length=1000,null=False,blank=False)
+    
+    class Meta:
+        verbose_name = "Scheduled Meetings"
+    def __str__(self):
+        return str(self.pk)
+
+class Notifications(models.Model):
+    '''Stores the notifications sent to the user'''
+    user_id=models.ForeignKey(UserInformations,null=False,blank=False,on_delete=models.CASCADE)
+    notification_message=models.CharField(max_length=300,null=False,blank=False)
+    is_seen=models.BooleanField(null=False,blank=False,default=False)
+    
+    class Meta:
+        verbose_name="User Notifications"
+    def __str__(self):
+        return str(self.pk)

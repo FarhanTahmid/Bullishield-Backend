@@ -209,7 +209,7 @@ def proctorComplainView(request):
             return Response({'msg':"User not found!"},status=status.HTTP_404_NOT_FOUND)
         
 
-class SchedueleMeeting(APIView):
+class ScheduleMeeting(APIView):
     @api_view(['GET'])
     @permission_classes([IsAuthenticated])
     def get(self,request):
@@ -252,6 +252,52 @@ class SchedueleMeeting(APIView):
                                 },status=status.HTTP_200_OK)       
                 except UserComplains.DoesNotExist:
                     return Response({'msg':"Complain not found!"},status=status.HTTP_404_NOT_FOUND)
+            elif(task=='call_meeting'):
+                complain_id=data.get('complain_id')
+                # get the complain object
+                complain=UserComplains.objects.get(pk=complain_id)
+                meeting_time=data.get('meeting_time')
+                meeting_message=data.get('meeting_message')
+                '''schedule meetings for- 
+                1.Proctor, 2. Complainer, 3. Bully'''
+                # get the proctor id first. as the proctor sets up the meeting, its going to be the current user id.
+                proctor_id=request.user.username
+                # schedule the meeting for proctor
+                try:
+                    new_proctor_meeting=ScheduledMeetings.objects.create(
+                        complain_id=UserComplains.objects.get(pk=complain_id),
+                        user_id=UserInformations.objects.get(user_id=proctor_id),
+                        meeting_time=meeting_time,
+                        meeting_message=meeting_message,
+                    )
+                    new_proctor_meeting.save()
+                except Exception as e:
+                    print(e)                
+                # schedule meeting for complainer
+                try:                    
+                    new_complainer_meeting=ScheduledMeetings.objects.create(
+                        complain_id=complain,user_id=complain.complainer,
+                        meeting_time=meeting_time,
+                        meeting_message=meeting_message,
+                    )
+                    new_complainer_meeting.save()
+                except Exception as e:
+                    print(e)
+                try:
+                    # get the bully object from user informations
+                    try:
+                        bully=UserInformations.objects.get(user_id=complain.bully_id)
+                        new_bully_meeting=ScheduledMeetings.objects.create(
+                            complain_id=complain,user_id=bully,
+                            meeting_time=meeting_time,
+                            meeting_message=meeting_message,  
+                        )
+                        new_bully_meeting.save()
+                        return Response({'msg':"Meeting was scheduled for all the parties"},status=status.HTTP_200_OK)
+                    except UserInformations.DoesNotExist:
+                        return Response({'msg':"Could not get bully information from user database. Meeting Scheduled for Complainer and Proctor. Bully will be notified by the given contact details!"},status=status.HTTP_404_NOT_FOUND)
+                except Exception as e:
+                    print(e)
+                                    
             else:
-                return Response(status=status.HTTP_403_FORBIDDEN)  
-            
+                return Response(status=status.HTTP_403_FORBIDDEN)
