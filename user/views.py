@@ -74,21 +74,46 @@ def check_auth_status(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
-    username = request.user.username
-    # get user info from database
-    user_info = UserInformations.objects.get(user_id=username)
-    
-    return Response({
-        'msg':'Got user information',
-        'user_info':{
-            'user_id':user_info.user_id,
-            'organization':user_info.organization_id.name,
-            'full_name':user_info.full_name,
-            'user_picture':'/media_files/'+str(user_info.user_picture),
-            'birth_date':user_info.birth_date,
-            'contact_no':user_info.contact_no,
-            'email_address':user_info.email_address,
-            'home_address':user_info.home_address,
-            'gender':user_info.gender,
-        }
-    },status=status.HTTP_200_OK)
+    if not request.user.is_authenticated:
+        return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        username = request.user.username
+        # get user info from database
+        user_info = UserInformations.objects.get(user_id=username)
+        
+        return Response({
+            'msg':'Got user information',
+            'user_info':{
+                'user_id':user_info.user_id,
+                'organization':user_info.organization_id.name,
+                'full_name':user_info.full_name,
+                'user_picture':'/media_files/'+str(user_info.user_picture),
+                'birth_date':user_info.birth_date,
+                'contact_no':user_info.contact_no,
+                'email_address':user_info.email_address,
+                'home_address':user_info.home_address,
+                'gender':user_info.gender,
+            }
+        },status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_user_profile(request):
+    if not request.user.is_authenticated:
+        return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        username=request.user.username
+        # get user object form UserInformations
+        try:
+            user=UserInformations.objects.get(user_id=username)
+            # get data from the request
+            data=request.data
+            # update user information
+            user.full_name=data.get('full_name')
+            user.contact_no=data.get('contact_no')
+            user.email_address=data.get('email_address')
+            user.home_address=data.get('home_address')
+            user.save()
+            return Response({'msg':"Profile Information was update"},status=status.HTTP_200_OK)
+        except UserInformations.DoesNotExist:
+            return Response({'msg': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
