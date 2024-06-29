@@ -71,6 +71,24 @@ class UserLogin(APIView):
 def check_auth_status(request):
     return Response({'msg': 'Authenticated'},status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def changeUserPassword(request):
+    if not request.user.is_authenticated:
+        return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        data=request.data
+        current_password=data.get('current_password')
+        username=request.user.username
+        user=authenticate(username=username,password=current_password)
+        if user is not None:
+            new_password=data.get('new_password')
+            user.set_password(new_password)
+            user.save()
+            return Response({'msg': 'Password changed successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'msg': 'Wrong Current Password. Try again!'}, status=status.HTTP_401_UNAUTHORIZED)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
