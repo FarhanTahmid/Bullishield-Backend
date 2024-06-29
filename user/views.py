@@ -117,3 +117,23 @@ def update_user_profile(request):
             return Response({'msg':"Profile Information was update"},status=status.HTTP_200_OK)
         except UserInformations.DoesNotExist:
             return Response({'msg': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_profile_picture(request):
+    if not request.user.is_authenticated:
+        return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        username = request.user.username
+        # get user object form UserInformations
+        try:
+            user = UserInformations.objects.get(user_id=username)
+            if 'picture' in request.FILES:
+                picture = request.FILES['picture']
+                user.user_picture=picture
+                user.save()
+                return Response({'msg': "Profile picture updated",'new_picture':user.user_picture.url}, status=status.HTTP_200_OK)
+            else:
+                return Response({'msg': 'No picture provided'}, status=status.HTTP_400_BAD_REQUEST)
+        except UserInformations.DoesNotExist:
+            return Response({'msg': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
