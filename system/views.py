@@ -214,7 +214,18 @@ class ScheduleMeeting(APIView):
     @api_view(['GET'])
     @permission_classes([IsAuthenticated])
     def get(self,request):
-        pass
+        if not request.user.is_authenticated:
+            return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # get username
+            user_id=request.user.username
+            # get all the scheduled meetings for the user
+            try:
+                user_scheduled_meetings=ScheduledMeetings.objects.filter(user_id=user_id).values().order_by('meeting_time')
+                return Response({'sceduled_meetings':user_scheduled_meetings},status=status.HTTP_200_OK)
+            except Exception as e:
+                print(e)
+                return Response({'msg':"User not found!"},status=status.HTTP_404_NOT_FOUND)
     def post(self,request):
         if not request.user.is_authenticated:
             return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
