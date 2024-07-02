@@ -211,8 +211,8 @@ def proctorComplainView(request):
         
 
 class ScheduleMeeting(APIView):
-    @api_view(['GET'])
     @permission_classes([IsAuthenticated])
+    
     def get(self,request):
         if not request.user.is_authenticated:
             return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -226,6 +226,7 @@ class ScheduleMeeting(APIView):
             except Exception as e:
                 print(e)
                 return Response({'msg':"User not found!"},status=status.HTTP_404_NOT_FOUND)
+    
     def post(self,request):
         if not request.user.is_authenticated:
             return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
