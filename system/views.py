@@ -222,7 +222,11 @@ class ScheduleMeeting(APIView):
             # get all the scheduled meetings for the user
             try:
                 user_scheduled_meetings=ScheduledMeetings.objects.filter(user_id=user_id).values().order_by('meeting_time')
-                return Response({'sceduled_meetings':user_scheduled_meetings},status=status.HTTP_200_OK)
+                scheduled_meeting_complain_list_id=[]
+                for complains in user_scheduled_meetings:
+                    scheduled_meeting_complain_list_id.append(complains['complain_id_id'])
+                complain_details=UserComplains.objects.filter(pk__in=scheduled_meeting_complain_list_id).values()
+                return Response({'sceduled_meetings':user_scheduled_meetings,'complain_details':complain_details},status=status.HTTP_200_OK)
             except Exception as e:
                 print(e)
                 return Response({'msg':"User not found!"},status=status.HTTP_404_NOT_FOUND)
