@@ -94,3 +94,13 @@ class Notifications(models.Model):
         verbose_name="User Notifications"
     def __str__(self):
         return str(self.pk)
+
+class ChatbotThreads(models.Model):
+    '''Stores the chatbot threads for every users'''
+    user_id=models.OneToOneField(UserInformations,null=False,blank=False,on_delete=models.CASCADE)
+    thread_id=models.CharField(models.CharField,null=False,blank=False,max_length=100)
+    
+    class Meta:
+        verbose_name = "Chatbot Threads"
+    def __str__(self) -> str:
+        return self.pk

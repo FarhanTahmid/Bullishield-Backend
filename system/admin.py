@@ -16,3 +16,8 @@ class UserComplains(admin.ModelAdmin):
 @admin.register(ScheduledMeetings)
 class ScheduledMeetings(admin.ModelAdmin):
     list_display = ['pk', 'user_id' ,'complain_id', 'meeting_time', 'meeting_message']
+    
+
+@admin.register(ChatbotThreads)
+class UserChatbotThreads(admin.ModelAdmin):
+    list_display=['user_id','thread_id']

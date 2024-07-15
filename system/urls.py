@@ -13,5 +13,5 @@ urlpatterns = [
     path('get_proctor_complains/',views.proctorComplainView,name="get_proctor_complains"),
     path('update_complains/',views.updateComplainDetails,name="update_complain"),
     path('meeting/',ScheduleMeeting.as_view(),name='meeting'),
-    
+    path('chatbot/',ChatbotAPI.as_view(),name='chatbot'),
 ]

@@ -6,6 +6,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from system.chatbot import Chatbot
+
 
 from user.models import UserInformations
 from .models import *
@@ -325,3 +327,18 @@ class ScheduleMeeting(APIView):
                                     
             else:
                 return Response(status=status.HTTP_403_FORBIDDEN)
+
+class ChatbotAPI(APIView):    
+    @permission_classes([IsAuthenticated])
+    
+    def get(self,request):
+        pass
+    
+    def post(self,request):
+        if not request.user.is_authenticated:
+            return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            data=request.data
+            user_message=data.get('user_message')
+            user_id=request.user.username
+            return Response({'assistant_message':"assistant_message"},status=status.HTTP_200_OK)    
