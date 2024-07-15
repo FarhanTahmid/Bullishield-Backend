@@ -332,8 +332,15 @@ class ChatbotAPI(APIView):
     @permission_classes([IsAuthenticated])
     
     def get(self,request):
-        pass
-    
+        if not request.user.is_authenticated:
+            return Response({'msg': 'User is not authenticated!'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            previous_message_status,user_chat_list,assistant_chat_list,msg=Chatbot.getAllMessagesOfUser(request.user.username)
+            if(previous_message_status):
+                return Response({'user_chat_list':user_chat_list,'assistant_chat_list':assistant_chat_list,'msg': msg}, status=status.HTTP_200_OK)
+            else:
+                return Response({'msg': msg}, status=status.HTTP_400_BAD_REQUEST)
+
     def post(self,request):
         if not request.user.is_authenticated:
             return Response({'msg': 'User is not authenticated!'}, status=status.HTTP_401_UNAUTHORIZED)

@@ -86,3 +86,23 @@ class Chatbot:
                     return True,assistant_message
             else:
                 return False,"Can not create User Message"
+    
+    def getAllMessagesOfUser(user_id):
+        user_message_list=[]
+        assistant_message_list=[]
+        try:
+            # get thread id of user
+
+            thread=ChatbotThreads.objects.get(user_id=user_id)
+            thread_messages = Chatbot.client.beta.threads.messages.list(thread_id=thread.thread_id)
+            for message in (thread_messages.data):
+                if(message.role=='user'):
+                    user_message_list.append(message.content[0].text.value)
+                elif(message.role=='assistant'):
+                    assistant_message_list.append(message.content[0].text.value)
+            return True,user_message_list,assistant_message_list,"Previous history retrieved!"
+        except ChatbotThreads.DoesNotExist:
+            return True,user_message_list,assistant_message_list,"No previous chat history was found!"
+        except Exception as e:
+            print(e)
+            return False,user_message_list,assistant_message_list,"Something went wrong while fetching messages"
