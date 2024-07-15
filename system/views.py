@@ -336,9 +336,14 @@ class ChatbotAPI(APIView):
     
     def post(self,request):
         if not request.user.is_authenticated:
-            return Response({'msg': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'msg': 'User is not authenticated!'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             data=request.data
             user_message=data.get('user_message')
             user_id=request.user.username
-            return Response({'assistant_message':"assistant_message"},status=status.HTTP_200_OK)    
+            bot_status,message=Chatbot.generateAssistantMessages(user_message=user_message,user_id=user_id)
+            if(bot_status):
+                return Response({'msg':f"{message}"},status=status.HTTP_200_OK)
+            else:
+                return Response({'msg':f"{message}"},status=status.HTTP_400_BAD_REQUEST)
+            
