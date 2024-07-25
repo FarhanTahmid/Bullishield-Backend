@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'organizations',
     'user',
     'system',
-
 ]
 
 MIDDLEWARE = [

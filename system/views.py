@@ -13,6 +13,7 @@ from user.models import UserInformations
 from .models import *
 from .complain_handler import ComplainHandler
 from .serializer import *
+from .model_operations import ModelOperations
 
 # Create your views here.
 
@@ -22,8 +23,7 @@ def systemOperations(request):
     
     while True:
         print("1. Register users from CSV files")
-        print("2. Create Organization Types")
-        print("3. Create Organizations")
+        print("2. Run the scheduler")
         
         choice=int(input("Your choice: "))
         
@@ -38,7 +38,9 @@ def systemOperations(request):
             else:
                 print("Something went wrong!")
                 return redirect('system:operations')
-
+        elif(choice==2):
+            # trigger the scheduler
+            ModelOperations.start_scehduler()
 
     return render(request,"index.html")
 

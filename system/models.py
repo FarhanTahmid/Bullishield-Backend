@@ -103,4 +103,14 @@ class ChatbotThreads(models.Model):
     class Meta:
         verbose_name = "Chatbot Threads"
     def __str__(self) -> str:
-        return self.pk
+        return str(self.pk)
+
+
+class SchedulerRecords(models.Model):
+    '''Stores Scheduler Records in the background'''
+    job_id=models.CharField(null=False,blank=False,max_length=300)
+    execution_status=models.BooleanField(null=False,blank=False,default=False)
+    class Meta:
+        verbose_name="Scheduler Records"
+    def __str__(self) -> str:
+        return str(self.pk)

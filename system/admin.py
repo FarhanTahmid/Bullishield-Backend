@@ -21,3 +21,7 @@ class ScheduledMeetings(admin.ModelAdmin):
 @admin.register(ChatbotThreads)
 class UserChatbotThreads(admin.ModelAdmin):
     list_display=['user_id','thread_id']
+    
+@admin.register(SchedulerRecords)
+class SchedulerRecords(admin.ModelAdmin):
+    list_display=['pk','job_id','execution_status']
