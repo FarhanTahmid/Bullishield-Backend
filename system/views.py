@@ -24,6 +24,7 @@ def systemOperations(request):
     while True:
         print("1. Register users from CSV files")
         print("2. Run the scheduler")
+        print("3. Extract Text from Images")
         
         choice=int(input("Your choice: "))
         
@@ -41,6 +42,10 @@ def systemOperations(request):
         elif(choice==2):
             # trigger the scheduler
             ModelOperations.start_scehduler()
+        elif(choice==3):
+            # extract text from images
+            filepath=str(input("Enter file path: "))
+            ModelOperations.extract_text_from_picture(filepath=filepath)
 
     return render(request,"index.html")
 
