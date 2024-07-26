@@ -6,8 +6,6 @@ import easyocr
 import regex
 
 
-
-
 scheduler=BlockingScheduler()
 
 class ModelOperations:

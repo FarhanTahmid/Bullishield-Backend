@@ -25,3 +25,7 @@ class UserChatbotThreads(admin.ModelAdmin):
 @admin.register(SchedulerRecords)
 class SchedulerRecords(admin.ModelAdmin):
     list_display=['pk','job_id','execution_status']
+
+@admin.register(ComplainProofExtractedStrings)
+class ExtractedStrings(admin.ModelAdmin):
+    list_display=['pk','image_id','extracted_strings','prediction_confidence']

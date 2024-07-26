@@ -67,10 +67,22 @@ class UserComplainProof(models.Model):
     proof_image_to_text=models.CharField(null=True,blank=True,max_length=400)
 
     class Meta:
-        verbose_name = ("Complain Proves")
+        verbose_name = "Complain Proves"
     def __str__(self):
         return str(self.complain_id)
 
+
+class ComplainProofExtractedStrings(models.Model):
+    '''Stores the strings extracted from images. Every string extracted from images is stored separately to identify if there are any cyberbullying texts'''
+    image_id=models.ForeignKey(UserComplainProof,null=False,blank=False,on_delete=models.CASCADE)
+    extracted_strings=models.TextField(null=True,blank=True)
+    prediction_confidence=models.DecimalField(null=True,blank=True,decimal_places=4,max_digits=10)
+    
+    class Meta:
+        verbose_name="Extracted Texts From Images"
+    
+    def __str__(self) -> str:
+        return str(self.pk)
 
 class ScheduledMeetings(models.Model):
     '''Stores the scheduled meetings between the bully and the complainer'''
