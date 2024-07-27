@@ -6,16 +6,42 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from pathlib import Path
+import regex
 from system.chatbot import Chatbot
-
-
 from user.models import UserInformations
 from .models import *
 from .complain_handler import ComplainHandler
 from .serializer import *
-from .model_operations import ModelOperations
+from .model_operations import DataProcessingAndOperations
+from apscheduler.schedulers.background import BlockingScheduler
+
+# import easyocr
+
 
 # Create your views here.
+
+def example_extract_text_from_picture(filepath):
+        # text_reader = easyocr.Reader(['en','bn'])
+        # file=Path(filepath)
+        # if file.is_file():
+        #     print(f"Got the image. Filepath: {filepath}")
+        #     result_from_text = text_reader.readtext(filepath)
+        #     full_text=[]
+        #     for (bbox, text, prob) in result_from_text:
+        #         print(f'Text: {text}, Probability: {prob}')
+        #         if(bool(regex.fullmatch(r'\P{L}*\p{Bengali}+(?:\P{L}+\p{Bengali}+)*\P{L}*', text))):
+        #             full_text.append(text + "। ")
+        #         else:
+        #             full_text.append(text+". ")
+        #     print(full_text)
+                
+        # else:
+        #     print("There was no image found with the filepath")
+        pass
+
+def exampleScheduler():
+    print("Scheduling tasks")
 
 def systemOperations(request):
     
@@ -25,7 +51,7 @@ def systemOperations(request):
         print("1. Register users from CSV files")
         print("2. Run the scheduler")
         print("3. Extract Text from Images")
-        
+        print("4. Process a particular complain ID")
         choice=int(input("Your choice: "))
         
         if choice==0:
@@ -41,11 +67,18 @@ def systemOperations(request):
                 return redirect('system:operations')
         elif(choice==2):
             # trigger the scheduler
-            ModelOperations.start_scehduler()
+            # ModelOperations.start_scehduler()
+            scheduler=BlockingScheduler()
+            job_id=scheduler.add_job(exampleScheduler, 'interval', seconds=5)
+            scheduler.start()
+            
         elif(choice==3):
             # extract text from images
             filepath=str(input("Enter file path: "))
-            ModelOperations.extract_text_from_picture(filepath=filepath)
+            example_extract_text_from_picture(filepath=filepath)
+        elif(choice==4):
+            complain_id=int(input("Enter the complain ID you want to process: "))
+            DataProcessingAndOperations.startSchedulingProgramms(complain_id=complain_id)
 
     return render(request,"index.html")
 
@@ -186,7 +219,8 @@ def registerComplain(request):
             except Exception as e:
                 print(e)
                 return Response({'msg': "Complain registered! Could not upload Bully Pictures"},status=status.HTTP_424_FAILED_DEPENDENCY)
-
+            # start the task scheduler to process the complains
+            
             return Response({'msg': "Complain Registered! We will get back to you soon!"},status=status.HTTP_200_OK)
         else:
             return Response({'msg': "Complain can not be registered!"},status=status.HTTP_403_FORBIDDEN)

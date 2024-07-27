@@ -13,6 +13,12 @@ class UserComplains(admin.ModelAdmin):
         'complain_status','guilty'
     ]
 
+@admin.register(UserComplainProof)
+class UserComplainProves(admin.ModelAdmin):
+    list_display=[
+        'complain_id','proof'
+    ]
+
 @admin.register(ScheduledMeetings)
 class ScheduledMeetings(admin.ModelAdmin):
     list_display = ['pk', 'user_id' ,'complain_id', 'meeting_time', 'meeting_message']

@@ -60,10 +60,14 @@ class BullyPictures(models.Model):
 def prove_image_upload_to(instance, filename):
     return f'complain_proofs/{instance.complain_id}/prove_{filename}'
 
+def prove_processed_image_upload_to(instance,filename):
+    return f'complain_proofs/{instance.complain_id}/processed_image_{filename}'
+
 class UserComplainProof(models.Model):
     '''Stores the uploaded complain proves'''
     complain_id=models.ForeignKey(UserComplains,null=False,blank=False,on_delete=models.CASCADE)
     proof=models.ImageField(null=True,blank=True,upload_to=prove_image_upload_to)
+    processed_proof_image=models.ImageField(null=True,blank=True,upload_to=prove_processed_image_upload_to)
     proof_image_to_text=models.CharField(null=True,blank=True,max_length=400)
 
     class Meta:
@@ -121,6 +125,7 @@ class ChatbotThreads(models.Model):
 class SchedulerRecords(models.Model):
     '''Stores Scheduler Records in the background'''
     job_id=models.CharField(null=False,blank=False,max_length=300)
+    complain_id=models.ForeignKey(UserComplains,null=True,blank=True,on_delete=models.CASCADE)
     execution_status=models.BooleanField(null=False,blank=False,default=False)
     class Meta:
         verbose_name="Scheduler Records"
