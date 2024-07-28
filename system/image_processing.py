@@ -1,10 +1,13 @@
 import cv2
+from pathlib import Path
 from PIL import Image
+import easyocr
+import regex
 import io
 from django.core.files.base import ContentFile
 
 
-class ProcessImageForOCR:
+class OCRActions:
     def processImage(imageFile,fileExtension,filename):
         image=cv2.imread(imageFile)
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -31,4 +34,30 @@ class ProcessImageForOCR:
         processed_image_file=ContentFile(img_io.getvalue(), f'{filename}.{pil_format}')
         
         return processed_image_file
+    
+    def extractTexts(image):
+        image_file=Path(image)
+        text_reader=easyocr.Reader(['en','bn'])
+        full_text=[]
+        english_texts=[]
+        bangla_texts=[]
+        if image_file.is_file():
+            print(f"Got the image. Filepath: {image_file}")
+            result_from_text = text_reader.readtext(image)
+            for (bbox, text, prob) in result_from_text:
+                print(f'Text: {text}, Probability: {prob}')
+                if(bool(regex.fullmatch(r'\P{L}*\p{Bengali}+(?:\P{L}+\p{Bengali}+)*\P{L}*', text))):
+                    full_text.append(text + "। ")
+                    bangla_texts.append(text)
+                else:
+                    full_text.append(text+". ")
+                    english_texts.append(text)
+            print(f"Bangla Texts: {bangla_texts}")
+            print(f"English Texts: {english_texts}")
+            
+            return True, full_text,english_texts,bangla_texts   
+                
+        else:
+            print("There was no image found with the filepath")
+            return False,full_text,english_texts,bangla_texts
         

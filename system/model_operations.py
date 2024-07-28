@@ -1,7 +1,8 @@
 from apscheduler.schedulers.background import BlockingScheduler
+import time
 from .models import *
 from pathlib import Path
-from .image_processing import ProcessImageForOCR
+from .image_processing import OCRActions
 import os
 
 
@@ -45,17 +46,34 @@ class DataProcessingAndOperations:
                 # Split the base name into name and extension
                 file_name, file_extension = os.path.splitext(base_name)
                 file_extension = file_extension.lstrip('.').upper()
-                processed_image=ProcessImageForOCR.processImage(imageFile=image_file,fileExtension=file_extension,filename=file_name)
+                processed_image=OCRActions.processImage(imageFile=image_file,fileExtension=file_extension,filename=file_name)
                 print("Image Processing Performed. Saving those Processed Images Now")
                 get_image_proof_id=UserComplainProof.objects.get(pk=image.pk)
                 get_image_proof_id.processed_proof_image=processed_image
                 get_image_proof_id.save()
                 
         print(f"Image saved successfully. Now, let's extract texts")
-        scheduler.shutdown(wait=False)
+        time.sleep(5)
+        DataProcessingAndOperations.extractStringsFromImages(image_objects=image_objects,scheduler=scheduler)
+        
     
-    def extractStringsFromImages(image_path):
-        pass
+    def extractStringsFromImages(image_objects,scheduler):
+        
+        for object in image_objects:
+            print(object.processed_proof_image.path)
+            processed_image_file=Path(object.processed_proof_image.path)
+            if(processed_image_file.is_file()):
+                print(f"Found the processed image file: {processed_image_file}")
+                print("Extracting Texts from File Now!")
+                extraction,full_text,english_texts,bangla_text=OCRActions.extractTexts(image=object.processed_proof_image.path)
+                if(extraction):
+                    print("Extraction Completed!")
+                else:
+                    print("Extraction Failed!")
+            else:
+                print("File Not Found")
+                    
+        scheduler.shutdown(wait=False)
     def cyberBullyingIdentification(string):
         pass
     
