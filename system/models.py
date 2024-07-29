@@ -73,7 +73,7 @@ class UserComplainProof(models.Model):
     class Meta:
         verbose_name = "Complain Proves"
     def __str__(self):
-        return str(self.complain_id)
+        return str(self.pk)
 
 
 class ComplainProofExtractedStrings(models.Model):
@@ -81,7 +81,7 @@ class ComplainProofExtractedStrings(models.Model):
     image_id=models.ForeignKey(UserComplainProof,null=False,blank=False,on_delete=models.CASCADE)
     extracted_strings=models.TextField(null=True,blank=True)
     prediction_confidence=models.DecimalField(null=True,blank=True,decimal_places=4,max_digits=10)
-    
+    bbox=models.CharField(null=True,blank=True,max_length=1000)
     class Meta:
         verbose_name="Extracted Texts From Images"
     

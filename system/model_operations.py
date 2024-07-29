@@ -29,10 +29,10 @@ class DataProcessingAndOperations:
         
         print(f"Total Picture found with the complain: {len(pictures)}. They are passed to processing now.")
         
-        DataProcessingAndOperations.processImagesToExtractTexts(image_objects=pictures,scheduler=scheduler)
+        DataProcessingAndOperations.processImagesToExtractTexts(complain_id=complain_id,image_objects=pictures,scheduler=scheduler)
         
         
-    def processImagesToExtractTexts(image_objects,scheduler):
+    def processImagesToExtractTexts(complain_id,image_objects,scheduler):
         
         print(f"Got images to process: {image_objects}")
         
@@ -54,27 +54,31 @@ class DataProcessingAndOperations:
                 
         print(f"Image saved successfully. Now, let's extract texts")
         time.sleep(5)
-        DataProcessingAndOperations.extractStringsFromImages(image_objects=image_objects,scheduler=scheduler)
+        DataProcessingAndOperations.extractStringsFromImages(complain_id=complain_id,scheduler=scheduler)
         
     
-    def extractStringsFromImages(image_objects,scheduler):
+    def extractStringsFromImages(complain_id,scheduler):
+        complain_objects=UserComplainProof.objects.filter(complain_id=UserComplains.objects.get(id=complain_id))
         
-        for object in image_objects:
+        for object in complain_objects:
             print(object.processed_proof_image.path)
             processed_image_file=Path(object.processed_proof_image.path)
             if(processed_image_file.is_file()):
                 print(f"Found the processed image file: {processed_image_file}")
                 print("Extracting Texts from File Now!")
-                extraction,full_text,english_texts,bangla_text=OCRActions.extractTexts(image=object.processed_proof_image.path)
+                extraction=OCRActions.extractTexts(image=object.processed_proof_image.path,proof_object=object)
                 if(extraction):
-                    print("Extraction Completed!")
+                    print("All Extraction Completed! Now identify CyberBullying")
+
                 else:
                     print("Extraction Failed!")
             else:
                 print("File Not Found")
                     
         scheduler.shutdown(wait=False)
-    def cyberBullyingIdentification(string):
-        pass
+    def cyberBullyingIdentification(complain_id):
+        get_the_extracted_string_objects=ComplainProofExtractedStrings.objects.filter(
+            
+        )
     
     

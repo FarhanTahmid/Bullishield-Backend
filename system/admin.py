@@ -16,7 +16,7 @@ class UserComplains(admin.ModelAdmin):
 @admin.register(UserComplainProof)
 class UserComplainProves(admin.ModelAdmin):
     list_display=[
-        'complain_id','proof'
+        'pk','complain_id','proof'
     ]
 
 @admin.register(ScheduledMeetings)
