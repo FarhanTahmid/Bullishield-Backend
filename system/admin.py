@@ -34,4 +34,4 @@ class SchedulerRecords(admin.ModelAdmin):
 
 @admin.register(ComplainProofExtractedStrings)
 class ExtractedStrings(admin.ModelAdmin):
-    list_display=['pk','image_id','extracted_strings','prediction_confidence']
+    list_display=['pk','image_id','extracted_strings','prediction_confidence','cyberBullyingFlag']

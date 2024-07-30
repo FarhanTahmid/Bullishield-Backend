@@ -7,6 +7,11 @@ import io
 import json
 from django.core.files.base import ContentFile
 from .models import *
+from . import bangla_nlp,english_nlp
+import string
+from .cyberbullying_classifiers import *
+
+
 class OCRActions:
     def processImage(imageFile,fileExtension,filename):
         image=cv2.imread(imageFile)
@@ -68,4 +73,43 @@ class OCRActions:
         else:
             print("There was no image found with the filepath")
             return False
-        
+
+class TextProcessor:
+    
+    def banglaTextProcessor(string):
+        clean_punctuation=bangla_nlp.clean_punctuations(text=string)
+        clean_emoji=bangla_nlp.clean_emoji(text=clean_punctuation)
+        clean_url=bangla_nlp.clean_url_and_email(clean_emoji)
+        clean_text=bangla_nlp.clean_digits(text=clean_url)
+        return clean_text
+    
+    def englishTextProcessor(text):
+        clean_emoji=english_nlp.remove_emoji(text)
+        clean_punctuation=clean_emoji.translate(str.maketrans('', '', string.punctuation))
+        clean_url=english_nlp.remove_urls(clean_punctuation)
+        clean_text=english_nlp.remove_numbers(clean_url)
+        return clean_text
+    
+    def textProcessor(string,device,english_model,bangla_model):
+        # first identify in which language the text is in
+        if(bool(regex.fullmatch(r'\P{L}*\p{Bengali}+(?:\P{L}+\p{Bengali}+)*\P{L}*', string=string))):
+            # send it to bangla text processor
+            processed_text=TextProcessor.banglaTextProcessor(string)
+            bullying_prediction=BullyingProcessor.predict_bangla_cyberbullying(device=device,model=bangla_model,texts=[processed_text])
+            bullying_flag=False
+            for i in bullying_prediction:
+                if(i>=0.5):
+                    bullying_flag=True
+                    break
+            return processed_text,bullying_flag
+        else:
+            # send it to English Text Processor
+            processed_text=TextProcessor.englishTextProcessor(string)
+            bullying_prediction=BullyingProcessor.predict_english_cyberbullying(device=device,model=english_model,texts=[processed_text])
+            bullying_flag=False
+            for i in bullying_prediction:
+                if(i>=0.5):
+                    bullying_flag=True
+                    break
+            return processed_text,bullying_flag
+

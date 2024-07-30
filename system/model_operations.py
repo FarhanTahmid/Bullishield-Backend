@@ -2,7 +2,9 @@ from apscheduler.schedulers.background import BlockingScheduler
 import time
 from .models import *
 from pathlib import Path
-from .image_processing import OCRActions
+from .processor import OCRActions,TextProcessor
+from .cyberbullying_classifiers import *
+
 import os
 
 
@@ -74,11 +76,34 @@ class DataProcessingAndOperations:
                     print("Extraction Failed!")
             else:
                 print("File Not Found")
+        print("Now Lets Process the Texts")
+        DataProcessingAndOperations.cyberBullyingIdentification(complain_id=complain_id,scheduler=scheduler)
                     
+    def cyberBullyingIdentification(complain_id,scheduler):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # load cyberBullying models
+        english_model=CyberBullyingClassifierEnglish()
+        english_model.to(device=device)
+        english_model.load_state_dict(torch.load('Models/english_bert.pth'))
+        bangla_model=CyberBullyingClassifierBangla()
+        bangla_model.to(device=device)
+        bangla_model.load_state_dict(torch.load('Models/bangla_bert.pth'))
+        
+        # get the images associated with the complain object
+        proof_image_objects=UserComplainProof.objects.filter(complain_id=UserComplains.objects.get(pk=complain_id))
+        # get the image strings asscociated with the image object of the complain
+        for image_object in proof_image_objects:
+            extracted_string_objects=ComplainProofExtractedStrings.objects.filter(image_id=image_object)
+            for string in extracted_string_objects:
+                print(f"Extracted From Image object:{image_object}, Raw String:{string.extracted_strings}")
+                string.extracted_strings,bullying_flag=TextProcessor.textProcessor(string=string.extracted_strings,device=device,english_model=english_model,bangla_model=bangla_model)
+                string.cyberBullyingFlag=bullying_flag
+                string.save()
+                if(string.extracted_strings=='' or string.extracted_strings==' '):
+                    # delete the string object as it is null
+                    string.delete()
+        print("All cyber bullying prediction Done!")                  
         scheduler.shutdown(wait=False)
-    def cyberBullyingIdentification(complain_id):
-        get_the_extracted_string_objects=ComplainProofExtractedStrings.objects.filter(
-            
-        )
+
     
     
