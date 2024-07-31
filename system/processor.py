@@ -42,6 +42,39 @@ class OCRActions:
         return processed_image_file
     
     
+    
+    def cyberBullyingFlaggedImageProcess(imageFile,fileExtension,filename,bbox_list):
+        image = cv2.imread(imageFile)
+
+        for line in bbox_list:
+            line_top_left=line[0]
+            line_bottom_right=line[1]
+            cv2.rectangle(image, tuple(line_top_left), tuple(line_bottom_right), (255, 0, 255), 2)
+
+        # Convert the OpenCV image to a PIL image
+        pil_image = Image.fromarray(image)
+        # Save the PIL image to an in-memory file
+        img_io = io.BytesIO()
+        # Mapping from file extensions to PIL formats
+        EXTENSION_TO_PIL_FORMAT = {
+            'JPG': 'JPEG',
+            'JPEG': 'JPEG',
+            'PNG': 'PNG',
+            'BMP': 'BMP',
+            'GIF': 'GIF',
+            'TIFF': 'TIFF',
+        }
+        pil_format = EXTENSION_TO_PIL_FORMAT.get(fileExtension, 'JPEG')
+        
+        pil_image.save(img_io, format=pil_format)
+        
+        processed_flagged_image=ContentFile(img_io.getvalue(), f'{filename}.{pil_format}')
+
+        return processed_flagged_image
+    
+    
+    
+    
     # Function to calculate the vertical center of a bounding box
     def vertical_center(bbox):
         return (bbox[0][1] + bbox[2][1]) / 2

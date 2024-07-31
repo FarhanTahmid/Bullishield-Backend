@@ -30,7 +30,7 @@ class UserComplains(models.Model):
     #information of the complaing
     incident_date=models.DateField(null=True,blank=True)
     complain_description=models.TextField(null=False,blank=False,max_length=1000)
-    complain_validation=models.BooleanField(null=False,blank=False,default=False)
+    complain_cyberBullying_flag_validation=models.BooleanField(null=False,blank=False,default=False)
     complain_status=models.CharField(null=False,blank=False,default="Processing",max_length=30)
     proctor_decision=models.CharField(null=True,blank=True,max_length=1000)
     
@@ -63,12 +63,18 @@ def prove_image_upload_to(instance, filename):
 def prove_processed_image_upload_to(instance,filename):
     return f'complain_proofs/{instance.complain_id}/processed_image_{filename}'
 
+def prove_cyberbullying_flagged_picture(instance,filename):
+    return f'complain_proofs/{instance.complain_id}/flagged_image_{filename}'
+
+
 class UserComplainProof(models.Model):
     '''Stores the uploaded complain proves'''
     complain_id=models.ForeignKey(UserComplains,null=False,blank=False,on_delete=models.CASCADE)
     proof=models.ImageField(null=True,blank=True,upload_to=prove_image_upload_to)
     processed_proof_image=models.ImageField(null=True,blank=True,upload_to=prove_processed_image_upload_to)
     proof_image_to_text=models.CharField(null=True,blank=True,max_length=400)
+    cyber_bullying_flag=models.BooleanField(null=False,blank=False,default=False)
+    cyber_bullying_flag_picture=models.ImageField(null=True,blank=True,upload_to=prove_cyberbullying_flagged_picture)
 
     class Meta:
         verbose_name = "Complain Proves"

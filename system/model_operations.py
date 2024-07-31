@@ -4,7 +4,7 @@ from .models import *
 from pathlib import Path
 from .processor import OCRActions,TextProcessor
 from .cyberbullying_classifiers import *
-
+import json
 import os
 
 
@@ -73,6 +73,8 @@ class DataProcessingAndOperations:
                     print("All Extraction Completed! Now identify CyberBullying")
                 else:
                     print("Extraction Failed!")
+                    scheduler.shutdown(wait=False)
+
             else:
                 print("File Not Found")
         print("Now Lets Process the Texts")
@@ -101,8 +103,50 @@ class DataProcessingAndOperations:
                 if(string.extracted_strings=='' or string.extracted_strings==' '):
                     # delete the string object as it is null
                     string.delete()
-        print("All cyber bullying prediction Done!")                  
+        print("All cyber bullying prediction Done! Now generate CyberBullying Flagged Image")                
+        DataProcessingAndOperations.generateProofOfBullyingMessage(complain_id=complain_id,scheduler=scheduler)
+    
+    def generateProofOfBullyingMessage(complain_id,scheduler):
+        # get the complain proof objects
+        proof_objects=UserComplainProof.objects.filter(complain_id=complain_id)
+        # now get the strings which are flagged as cyberBullying in the ExtractedStringModel
+        for proof in proof_objects:
+            extracted_bullying_strings=ComplainProofExtractedStrings.objects.filter(
+                image_id=proof.pk,cyberBullyingFlag=True
+            )
+            if(len(extracted_bullying_strings)>0):
+                bbox_list=[]
+                for string in extracted_bullying_strings:
+                    bbox_list.append(json.loads(string.bbox))
+                
+                image_file=Path(proof.processed_proof_image.path)
+                # Get the base name of the file
+                base_name = os.path.basename(image_file)
+                # Split the base name into name and extension
+                file_name, file_extension = os.path.splitext(base_name)
+                file_extension = file_extension.lstrip('.').upper()
+                
+                flagged_image=OCRActions.cyberBullyingFlaggedImageProcess(
+                    imageFile=Path(proof.processed_proof_image.path),
+                    fileExtension=file_extension,
+                    filename=file_name,bbox_list=bbox_list
+                )
+                proof.cyber_bullying_flag_picture=flagged_image
+                proof.cyber_bullying_flag=True
+                proof.save()
+                print("Generated Proof Picture")
+                complain=UserComplains.objects.get(pk=complain_id)
+                complain.complain_cyberBullying_flag_validation=True
+                complain.complain_status="Validation Completed"
+                complain.save()
+                print("Updated Complain Status")
+            else:
+                continue
+            
         scheduler.shutdown(wait=False)
+
+            
+            
 
     
     

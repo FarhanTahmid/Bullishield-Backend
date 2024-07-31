@@ -122,7 +122,7 @@ def getComplainDetails(request):
                 'proof_images':proof_images_urls,
                 'bully_images':bully_images_urls,
                 'organization_name':complain.organization_id.name,
-                'complain_validation':complain.complain_validation,
+                'complain_validation':complain.complain_cyberBullying_flag_validation,
                 'complain_description':complain.complain_description,
                 'is_bully_guilty':complain.guilty,
                 'proctor_decision':complain.proctor_decision,
