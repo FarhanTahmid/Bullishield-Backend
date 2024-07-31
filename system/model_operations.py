@@ -71,14 +71,13 @@ class DataProcessingAndOperations:
                 extraction=OCRActions.extractTexts(image=object.processed_proof_image.path,proof_object=object)
                 if(extraction):
                     print("All Extraction Completed! Now identify CyberBullying")
-
                 else:
                     print("Extraction Failed!")
             else:
                 print("File Not Found")
         print("Now Lets Process the Texts")
         DataProcessingAndOperations.cyberBullyingIdentification(complain_id=complain_id,scheduler=scheduler)
-                    
+
     def cyberBullyingIdentification(complain_id,scheduler):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # load cyberBullying models

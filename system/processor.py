@@ -10,6 +10,7 @@ from .models import *
 from . import bangla_nlp,english_nlp
 import string
 from .cyberbullying_classifiers import *
+import numpy as np
 
 
 class OCRActions:
@@ -40,35 +41,87 @@ class OCRActions:
         
         return processed_image_file
     
+    
+    # Function to calculate the vertical center of a bounding box
+    def vertical_center(bbox):
+        return (bbox[0][1] + bbox[2][1]) / 2
+    
+    # Function to merge words into lines based on y-coordinate proximity
+    def merge_words_into_lines(results):
+        lines = []
+        current_line = []
+        previous_y = None
+
+        for result in results:
+            bbox, text, prob = result
+            current_y = OCRActions.vertical_center(bbox)
+
+            if previous_y is None:
+                current_line.append((text, bbox, prob))
+            else:
+                # If the current word is vertically close to the previous word, append to the current line
+                if abs(current_y - previous_y) < 20:  # Adjust this threshold as needed
+                    current_line.append((text, bbox, prob))
+                else:
+                    # Otherwise, start a new line
+                    lines.append(current_line)
+                    current_line = [(text, bbox, prob)]
+
+            previous_y = current_y
+
+        # Add the last line
+        if current_line:
+            lines.append(current_line)
+
+        return lines
+
+    
+    def convertListToString(bbox_list):
+        python_bbox_list = [[int(element) for element in sublist] for sublist in bbox_list]
+        bboxToString=json.dumps(python_bbox_list)
+        return bboxToString
+    
     def extractTexts(image,proof_object):
         image_file=Path(image)
         print(f"We are extracting texts from the Image with ID: {proof_object.pk}")
         text_reader=easyocr.Reader(['en','bn'])
         if image_file.is_file():
-            print(f"Got the image. Filepath: {image_file}")
-            result_from_text = text_reader.readtext(image)
-            for (bbox, text, prob) in result_from_text:
-                print(f'Text: {text}, Probability: {prob},BBOX:{bbox}')
-                python_bbox_list = [[int(element) for element in sublist] for sublist in bbox]
-                bboxToString=json.dumps(python_bbox_list)
-                if(bool(regex.fullmatch(r'\P{L}*\p{Bengali}+(?:\P{L}+\p{Bengali}+)*\P{L}*', text))):
-                    new_object=ComplainProofExtractedStrings.objects.create(
+            
+            results=text_reader.readtext(image,detail=1)
+            
+            # Get the lines from the OCR results
+            lines = OCRActions.merge_words_into_lines(results=results)
+            
+            # Store and print the bounding boxes and probabilities of each whole line
+            line_bboxes_probs = []
+            
+            for line in lines:
+                line_text = ' '.join([text for text, bbox, prob in line])
+                print(f"Extracted Line: {line_text}")  # Print the line text
+
+                # Calculate a bounding box around the whole line
+                line_bboxes_coords = [bbox for text, bbox, prob in line]
+                line_top_left = [min(bbox[0][0] for bbox in line_bboxes_coords), min(bbox[0][1] for bbox in line_bboxes_coords)]
+                line_bottom_right = [max(bbox[2][0] for bbox in line_bboxes_coords), max(bbox[2][1] for bbox in line_bboxes_coords)]
+                
+                # Calculate the average probability for the line
+                avg_prob = np.mean([prob for text, bbox, prob in line])
+                
+                # Store the bounding box and probability for the whole line as lists
+                line_bbox_prob = [line_top_left, line_bottom_right, avg_prob,line_text]
+                line_bboxes_probs.append(line_bbox_prob)
+    
+            # Print the stored bounding boxes
+            for i, bbox_prob in enumerate(line_bboxes_probs):
+                print(f"Line {i + 1} Bounding Box: {bbox_prob[:2]}, Probability: {bbox_prob[2]}")
+                new_object=ComplainProofExtractedStrings.objects.create(
                         image_id=UserComplainProof.objects.get(pk=proof_object.pk),
-                        extracted_strings=text + "। ",
-                        prediction_confidence=prob,
-                        bbox=bboxToString
-                    )
-                    new_object.save()
-                    pass
-                else:
-                    new_object=ComplainProofExtractedStrings.objects.create(
-                        image_id=UserComplainProof.objects.get(pk=proof_object.pk),
-                        extracted_strings=text + ". ",
-                        prediction_confidence=prob,
-                        bbox=bboxToString                        
-                    )
-                    new_object.save()
-                    pass
+                        extracted_strings=bbox_prob[3],
+                        prediction_confidence=bbox_prob[2],
+                        bbox=OCRActions.convertListToString(bbox_prob[:2])
+                )
+                new_object.save() 
+                print("New Object created!")
             return True
         else:
             print("There was no image found with the filepath")
