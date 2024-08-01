@@ -15,11 +15,11 @@ class DataProcessingAndOperations:
     # Initialize the scheduler with appropriate executors
     executors = {
         'default': ThreadPoolExecutor(10),
-        'processpool': ProcessPoolExecutor(3)
+        'processpool': ProcessPoolExecutor(10)
     }
     # scheduler to automate tasks
     scheduler=BackgroundScheduler(executors=executors)
-    scheduler.start()
+    # scheduler.start()
     
     def startSchedulingProgramms(complain_id):
         # add job to scheduler to run all programs
@@ -27,6 +27,7 @@ class DataProcessingAndOperations:
             job_id=DataProcessingAndOperations.scheduler.add_job(DataProcessingAndOperations.getComplainToProcess,trigger=IntervalTrigger(seconds=5),args=[complain_id])
         else:
             print("Scheduler is not running")
+            # DataProcessingAndOperations.scheduler.start()
         
     def stopScheduler():
         # to stop the scheduler after a run
@@ -177,7 +178,7 @@ class DataProcessingAndOperations:
                 # Update main complain status and bullying flag
                 complain=UserComplains.objects.get(pk=complain_id)
                 complain.complain_cyberBullying_flag_validation=True
-                complain.complain_status="Validation Completed"
+                complain.complain_status="Validated"
                 complain.save()
             else:
                 # update bullying flag to false if no bullying is founc
@@ -186,7 +187,7 @@ class DataProcessingAndOperations:
                 
                 # Update main complain status and bullying flag
                 complain=UserComplains.objects.get(pk=complain_id)
-                complain.complain_status="Validation Completed"
+                complain.complain_status="Validated"
                 complain.save()
         
         # shutdown scheduler to end all process

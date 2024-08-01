@@ -78,8 +78,16 @@ def systemOperations(request):
             example_extract_text_from_picture(filepath=filepath)
         elif(choice==4):
             complain_id=int(input("Enter the complain ID you want to process: "))
-            DataProcessingAndOperations.startSchedulingProgramms(complain_id=complain_id)
-
+            try:
+                operation=DataProcessingAndOperations
+                operation.scheduler.start()
+                operation.startSchedulingProgramms(complain_id=complain_id)
+            except Exception as e:
+                print(e)
+                # operation.scheduler.shutdown(wait=False)
+                # operation.scheduler.start()
+                # operation.startSchedulingProgramms(complain_id=complain_id)
+                
     return render(request,"index.html")
 
 @api_view(['POST'])
@@ -116,13 +124,22 @@ def getComplainDetails(request):
             proof_images=UserComplainProof.objects.filter(complain_id=complain)
             bully_images=BullyPictures.objects.filter(complain_id=complain)
             
+            cyber_bullying_flag_picture_urls=[]
+            
+            if(complain.complain_cyberBullying_flag_validation):
+                for bullying_picture in proof_images:
+                    try:
+                        cyber_bullying_flag_picture_urls.append(bullying_picture.cyber_bullying_flag_picture.url)
+                    except Exception as e:
+                        pass
             proof_images_urls = [proof_image.proof.url for proof_image in proof_images]
             bully_images_urls = [bully_image.bully_image.url for bully_image in bully_images]            
             return Response({
                 'proof_images':proof_images_urls,
                 'bully_images':bully_images_urls,
+                'flagged_images':cyber_bullying_flag_picture_urls,
                 'organization_name':complain.organization_id.name,
-                'complain_validation':complain.complain_cyberBullying_flag_validation,
+                'complain_cyberBullying_flag_validation':complain.complain_cyberBullying_flag_validation,
                 'complain_description':complain.complain_description,
                 'is_bully_guilty':complain.guilty,
                 'proctor_decision':complain.proctor_decision,
@@ -222,9 +239,14 @@ def registerComplain(request):
             # start the task scheduler to process the complains
             try:
                 operation=DataProcessingAndOperations
+                operation.scheduler.start()
                 operation.startSchedulingProgramms(complain_id=complain_pk)
             except Exception as e:
                 print(e)
+                operation.scheduler.shutdown(wait=False)
+                operation.scheduler.start()
+                operation.startSchedulingProgramms(complain_id=complain_pk)
+
             return Response({'msg': "Complain Registered! We will get back to you soon!"},status=status.HTTP_200_OK)
         else:
             return Response({'msg': "Complain can not be registered!"},status=status.HTTP_403_FORBIDDEN)
