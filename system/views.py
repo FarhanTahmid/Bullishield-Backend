@@ -220,7 +220,11 @@ def registerComplain(request):
                 print(e)
                 return Response({'msg': "Complain registered! Could not upload Bully Pictures"},status=status.HTTP_424_FAILED_DEPENDENCY)
             # start the task scheduler to process the complains
-            
+            try:
+                operation=DataProcessingAndOperations
+                operation.startSchedulingProgramms(complain_id=complain_pk)
+            except Exception as e:
+                print(e)
             return Response({'msg': "Complain Registered! We will get back to you soon!"},status=status.HTTP_200_OK)
         else:
             return Response({'msg': "Complain can not be registered!"},status=status.HTTP_403_FORBIDDEN)
@@ -242,7 +246,7 @@ def proctorComplainView(request):
                 organization_complains=UserComplains.objects.filter(organization_id=user.organization_id).values(
                     'id','complainer','organization_id','complain_type',
                     'bully_name','bully_id',
-                    'incident_date','complain_description','complain_validation',
+                    'incident_date','complain_description','complain_cyberBullying_flag_validation',
                     'complain_status','proctor_decision','guilty'
                 ).order_by('-pk')
                 return Response({'complain_list':organization_complains,'organization_name':user.organization_id.name},status=status.HTTP_200_OK)

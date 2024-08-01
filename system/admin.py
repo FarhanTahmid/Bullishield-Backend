@@ -9,14 +9,14 @@ class ComplainTypes(admin.ModelAdmin):
 @admin.register(UserComplains)
 class UserComplains(admin.ModelAdmin):
     list_display=[
-        'complainer','organization_id','bully_name','incident_date',
+        'pk','complainer','organization_id','bully_name','incident_date',
         'complain_status','guilty'
     ]
 
 @admin.register(UserComplainProof)
 class UserComplainProves(admin.ModelAdmin):
     list_display=[
-        'pk','complain_id','proof'
+        'pk','complain_id','proof','cyber_bullying_flag'
     ]
 
 @admin.register(ScheduledMeetings)
